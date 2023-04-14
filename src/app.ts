@@ -3,8 +3,11 @@ import { ZodError } from 'zod'
 import { env } from './env'
 import { appRoutes } from './routes/routes'
 import multipart from '@fastify/multipart'
+import fastifyJwt from '@fastify/jwt'
 
 export const app = fastify()
+
+app.register(fastifyJwt)
 
 app.register(multipart, {
   addToBody: true,
