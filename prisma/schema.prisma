@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  full_name     String
+  email         String   @unique
+  password_hash String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  Recipe        Recipe[]
+  Tip           Tip[]
+
+  @@map("users")
+}
+
+model Category {
+  id         String   @id @default(uuid())
+  title      String
+  slug       String   @unique
+  images     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Recipe     Recipe[]
+  Tip        Tip[]
+
+  @@map("categories")
+}
+
+model Recipe {
+  id                String   @id @default(uuid())
+  title             String
+  slug              String   @unique
+  preparation_time  String
+  difficulty        String
+  people_serv       Int
+  ingredients       String
+  preparation_steps String
+  images            String
+  content           String
+  category_id       String
+  user_id           String
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  category Category @relation(fields: [category_id], references: [id])
+  user     User     @relation(fields: [user_id], references: [id])
+
+  @@map("recipes")
+}
+
+model Tip {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  images      String
+  content     String
+  category_id String
+  user_id     String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  category Category @relation(fields: [category_id], references: [id])
+  user     User     @relation(fields: [user_id], references: [id])
+
+  @@map("tips")
+}
