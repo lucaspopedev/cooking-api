@@ -1,3 +1,4 @@
+import { login } from '@/http/controllers/authController'
 import {
   createCategory,
   getCategory,
@@ -64,6 +65,8 @@ export async function appRoutes(app: FastifyInstance) {
   app.post('/tips', createTip)
   app.put('/tips/:uuid', updateTip)
   app.delete('/tips/:uuid', deleteTip)
+
+  app.post('/login', login)
 
   app.post<{ Body: UploadRequest }>('/images/upload', imagesUpload)
 }
