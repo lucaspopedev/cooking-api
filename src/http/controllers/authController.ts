@@ -31,9 +31,16 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
     })
   }
 
-  const token = await reply.jwtSign({
-    email,
-  })
+  const token = await reply.jwtSign(
+    {},
+    {
+      sign: {
+        sub: user.id,
+      },
+    },
+  )
 
-  return { token }
+  return reply.status(200).send({
+    token,
+  })
 }
