@@ -1,4 +1,4 @@
-import { login } from '@/http/controllers/authController'
+import { login, verifyToken } from '@/http/controllers/authController'
 import {
   createCategory,
   getCategory,
@@ -42,29 +42,29 @@ interface UploadRequest {
 }
 
 export async function appRoutes(app: FastifyInstance) {
-  app.get('/users', listUsers)
-  app.post('/users', createUser)
-  app.get('/users/:uuid', getUser)
-  app.put('/users/:uuid', updateUser)
-  app.delete('/users/:uuid', deleteUser)
+  app.get('/users', { preHandler: verifyToken }, listUsers)
+  app.post('/users', { preHandler: verifyToken }, createUser)
+  app.get('/users/:uuid', { preHandler: verifyToken }, getUser)
+  app.put('/users/:uuid', { preHandler: verifyToken }, updateUser)
+  app.delete('/users/:uuid', { preHandler: verifyToken }, deleteUser)
 
-  app.get('/categories', listCategories)
-  app.post('/categories', createCategory)
-  app.get('/categories/:uuid', getCategory)
-  app.put('/categories/:uuid', updateCategory)
-  app.delete('/categories/:uuid', deleteUser)
+  app.get('/categories', { preHandler: verifyToken }, listCategories)
+  app.post('/categories', { preHandler: verifyToken }, createCategory)
+  app.get('/categories/:uuid', { preHandler: verifyToken }, getCategory)
+  app.put('/categories/:uuid', { preHandler: verifyToken }, updateCategory)
+  app.delete('/categories/:uuid', { preHandler: verifyToken }, deleteUser)
 
-  app.get('/recipes', listRecipes)
-  app.get('/recipes/:uuid', getRecipe)
-  app.post('/recipes', createRecipe)
-  app.put('/recipes', updateRecipe)
-  app.delete('/recipes/:uuid', deleteRecipe)
+  app.get('/recipes', { preHandler: verifyToken }, listRecipes)
+  app.get('/recipes/:uuid', { preHandler: verifyToken }, getRecipe)
+  app.post('/recipes', { preHandler: verifyToken }, createRecipe)
+  app.put('/recipes', { preHandler: verifyToken }, updateRecipe)
+  app.delete('/recipes/:uuid', { preHandler: verifyToken }, deleteRecipe)
 
-  app.get('/tips', listTips)
-  app.get('/tips/:uuid', getTip)
-  app.post('/tips', createTip)
-  app.put('/tips/:uuid', updateTip)
-  app.delete('/tips/:uuid', deleteTip)
+  app.get('/tips', { preHandler: verifyToken }, listTips)
+  app.get('/tips/:uuid', { preHandler: verifyToken }, getTip)
+  app.post('/tips', { preHandler: verifyToken }, createTip)
+  app.put('/tips/:uuid', { preHandler: verifyToken }, updateTip)
+  app.delete('/tips/:uuid', { preHandler: verifyToken }, deleteTip)
 
   app.post('/login', login)
 
