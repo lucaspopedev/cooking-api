@@ -1,4 +1,4 @@
-import { login, verifyToken } from '@/http/controllers/authController'
+import { login } from '@/http/controllers/authController'
 import {
   createCategory,
   getCategory,
@@ -27,6 +27,7 @@ import {
   listUsers,
   updateUser,
 } from '@/http/controllers/userController'
+import { verifyToken } from '@/http/middlewares/check-jwt-token'
 import { FastifyInstance } from 'fastify'
 
 interface UploadRequest {
