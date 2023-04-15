@@ -44,3 +44,14 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
     token,
   })
 }
+
+export async function verifyToken(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  try {
+    await request.jwtVerify()
+  } catch (error) {
+    reply.send(error)
+  }
+}
