@@ -11,7 +11,7 @@ app.register(fastifyJwt, {
   secret: env.JWT_SECRET,
   sign: {
     algorithm: 'HS512',
-    expiresIn: '8h',
+    expiresIn: '10m',
   },
 })
 
