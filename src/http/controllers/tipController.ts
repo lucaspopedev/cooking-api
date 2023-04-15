@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { slugify } from '@/lib/slugify'
+import { slugify } from '@/utils/slugify'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 
