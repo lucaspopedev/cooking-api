@@ -50,7 +50,15 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
     },
   )
 
-  return reply.status(200).send({
-    token,
-  })
+  return reply
+    .setCookie('refreshToken', refreshToken, {
+      path: '/',
+      secure: true,
+      sameSite: true,
+      httpOnly: true,
+    })
+    .status(200)
+    .send({
+      token,
+    })
 }
