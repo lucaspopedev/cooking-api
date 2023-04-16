@@ -13,6 +13,7 @@ import {
   listRecipes,
   updateRecipe,
 } from '@/http/controllers/recipeController'
+import { refresh } from '@/http/controllers/refreshTokenController'
 import {
   createTip,
   deleteTip,
@@ -68,6 +69,7 @@ export async function appRoutes(app: FastifyInstance) {
   app.delete('/tips/:uuid', { preHandler: verifyToken }, deleteTip)
 
   app.post('/login', login)
+  app.patch('/token/refresh', refresh)
 
   app.post<{ Body: UploadRequest }>('/images/upload', imagesUpload)
 }

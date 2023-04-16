@@ -3,17 +3,24 @@ import { ZodError } from 'zod'
 import { env } from './env'
 import { appRoutes } from './routes/routes'
 import multipart from '@fastify/multipart'
+import fastifyCookie from '@fastify/cookie'
 import fastifyJwt from '@fastify/jwt'
 
 export const app = fastify()
 
 app.register(fastifyJwt, {
   secret: env.JWT_SECRET,
+  cookie: {
+    cookieName: 'refreshToken',
+    signed: false,
+  },
   sign: {
     algorithm: 'HS512',
-    expiresIn: '8h',
+    expiresIn: '10m',
   },
 })
+
+app.register(fastifyCookie)
 
 app.register(multipart, {
   addToBody: true,
