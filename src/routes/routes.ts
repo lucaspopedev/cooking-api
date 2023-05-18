@@ -1,33 +1,33 @@
-import { login } from '@/http/controllers/authController'
+import { login } from '@/http/controllers/auth-controller'
 import {
   createCategory,
   getCategory,
   listCategories,
   updateCategory,
-} from '@/http/controllers/categoryController'
-import { imagesUpload } from '@/http/controllers/ImageController'
+} from '@/http/controllers/category-controller'
+import { imagesUpload } from '@/http/controllers/category-image-controller'
 import {
   createRecipe,
   deleteRecipe,
   getRecipe,
   listRecipes,
   updateRecipe,
-} from '@/http/controllers/recipeController'
-import { refresh } from '@/http/controllers/refreshTokenController'
+} from '@/http/controllers/recipe-controller'
+import { refresh } from '@/http/controllers/refresh-token-controller'
 import {
   createTip,
   deleteTip,
   getTip,
   listTips,
   updateTip,
-} from '@/http/controllers/tipController'
+} from '@/http/controllers/tip-controller'
 import {
   createUser,
   deleteUser,
   getUser,
   listUsers,
   updateUser,
-} from '@/http/controllers/userController'
+} from '@/http/controllers/user-controller'
 import { verifyToken } from '@/http/middlewares/check-jwt-token'
 import { FastifyInstance } from 'fastify'
 
