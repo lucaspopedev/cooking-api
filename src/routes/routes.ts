@@ -5,7 +5,7 @@ import {
   listCategories,
   updateCategory,
 } from '@/http/controllers/category-controller'
-import { imagesUpload } from '@/http/controllers/category-image-controller'
+import { imagesUpload } from '@/http/controllers/image-controller'
 import {
   createRecipe,
   deleteRecipe,
