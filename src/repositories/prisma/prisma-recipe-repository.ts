@@ -18,7 +18,7 @@ interface UpdateRecipeData {
 }
 
 export class PrismaRecipeRepository implements RecipeInterface {
-  create(data: Prisma.RecipeCreateInput): Promise<Recipe> {
+  create(data: Prisma.RecipeUncheckedCreateInput): Promise<Recipe> {
     const recipe = prisma.recipe.create({
       data,
     })
