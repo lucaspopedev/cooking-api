@@ -1,10 +1,15 @@
-import { prisma } from '@/lib/prisma'
+import { PrismaCategoryRepository } from '@/repositories/prisma/prisma-category-repository'
+import { UpdateCategoryUseCase } from '@/use-cases/update-category'
+import { slugify } from '@/utils/slugify'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
 export async function listCategories(_: FastifyRequest, reply: FastifyReply) {
   try {
-    const categories = await prisma.category.findMany()
+    const categoryRepository = new PrismaCategoryRepository()
+
+    const categories = await categoryRepository.findMany()
+
     return reply.status(200).send(categories)
   } catch (error) {
     throw new Error()
@@ -21,12 +26,10 @@ export async function getCategory(
 
   const { uuid } = getCategoryBodySchema.parse(request.params)
 
+  const categoryRepository = new PrismaCategoryRepository()
+
   try {
-    const category = await prisma.category.findUnique({
-      where: {
-        id: uuid,
-      },
-    })
+    const category = await categoryRepository.findUnique(uuid)
 
     if (!category) {
       return reply.status(404).send({ message: 'Category not found' })
@@ -46,26 +49,16 @@ export async function createCategory(
   })
 
   const { title, images } = createCategorySchema.parse(request.body)
-  const slug = title.toLowerCase().replace(/ /g, '-')
+
+  const categoryRepository = new PrismaCategoryRepository()
 
   try {
-    const categoryExists = await prisma.category.findUnique({
-      where: {
-        slug,
-      },
+    await categoryRepository.create({
+      title,
+      slug: slugify(title),
+      images,
     })
 
-    if (categoryExists) {
-      return reply.status(400).send({ message: 'Category already exists' })
-    }
-
-    await prisma.category.create({
-      data: {
-        title,
-        slug,
-        images,
-      },
-    })
     return reply.status(201).send({ message: 'Category created' })
   } catch (error) {}
 }
@@ -86,28 +79,15 @@ export async function updateCategory(
   })
 
   const { title, images } = createUpdateCategorySchema.parse(request.body)
-  const slug = title.toLowerCase().replace(/ /g, '-')
+
+  const categoryRepository = new PrismaCategoryRepository()
+  const updateCategoryUseCase = new UpdateCategoryUseCase(categoryRepository)
 
   try {
-    const category = await prisma.category.findUnique({
-      where: {
-        id: uuid,
-      },
-    })
-
-    if (!category) {
-      return reply.status(404).send({ message: 'Category not found' })
-    }
-
-    await prisma.category.update({
-      where: {
-        id: uuid,
-      },
-      data: {
-        title,
-        slug,
-        images,
-      },
+    await updateCategoryUseCase.execute({
+      uuid,
+      title,
+      images,
     })
 
     return reply.status(200).send({ message: 'Category updated' })
@@ -124,22 +104,16 @@ export async function deleteCategory(
 
   const { uuid } = createDeleteCategoryBodySchema.parse(request.params)
 
+  const categoryRepository = new PrismaCategoryRepository()
+
   try {
-    const category = await prisma.category.findUnique({
-      where: {
-        id: uuid,
-      },
-    })
+    const category = await categoryRepository.findUnique(uuid)
 
     if (!category) {
       return reply.status(404).send({ message: 'Category not found' })
     }
 
-    await prisma.category.delete({
-      where: {
-        id: uuid,
-      },
-    })
+    categoryRepository.delete(uuid)
 
     return reply.status(200).send({ message: 'Category deleted' })
   } catch (error) {}
