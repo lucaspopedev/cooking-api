@@ -1,15 +1,18 @@
-import { prisma } from '@/lib/prisma'
-import { slugify } from '@/utils/slugify'
+import { PrismaRecipeRepository } from '@/repositories/prisma/prisma-recipe-repository'
+import { CreateRecipeUseCase } from '@/use-cases/create-recipe'
+import { UpdateRecipeUseCase } from '@/use-cases/update-recipe'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
 export async function listRecipes(_: FastifyRequest, reply: FastifyReply) {
   try {
-    const recipes = await prisma.recipe.findMany()
+    const recipeRepository = new PrismaRecipeRepository()
+
+    const recipes = await recipeRepository.findMany()
+
     return reply.status(200).send(recipes)
   } catch (error) {
     console.log(error)
-
     throw new Error()
   }
 }
@@ -21,12 +24,10 @@ export async function getRecipe(request: FastifyRequest, reply: FastifyReply) {
 
   const { uuid } = createGetCategoryBodySchema.parse(request.params)
 
+  const recipeRepository = new PrismaRecipeRepository()
+
   try {
-    const category = await prisma.category.findUnique({
-      where: {
-        id: uuid,
-      },
-    })
+    const category = await recipeRepository.findUnique(uuid)
 
     if (!category) {
       return reply.status(404).send({ message: 'Recipe not found' })
@@ -55,6 +56,8 @@ export async function createRecipe(
 
   const {
     title,
+    category_id,
+    user_id,
     preparation_time,
     difficulty,
     people_serv,
@@ -62,35 +65,23 @@ export async function createRecipe(
     images,
     content,
     preparation_steps,
-    category_id,
-    user_id,
   } = createRecipeSchema.parse(request.body)
 
   try {
-    const recipeExists = await prisma.recipe.findUnique({
-      where: {
-        slug: slugify(title),
-      },
-    })
+    const recipeRepository = new PrismaRecipeRepository()
+    const recipeUseCase = new CreateRecipeUseCase(recipeRepository)
 
-    if (recipeExists) {
-      return reply.status(400).send({ message: 'Recipe already exists' })
-    }
-
-    const recipe = await prisma.recipe.create({
-      data: {
-        title,
-        slug: slugify(title),
-        preparation_time,
-        difficulty,
-        people_serv,
-        ingredients,
-        images,
-        content,
-        preparation_steps,
-        category_id,
-        user_id,
-      },
+    const recipe = recipeUseCase.execute({
+      title,
+      category_id,
+      user_id,
+      preparation_time,
+      difficulty,
+      people_serv,
+      ingredients,
+      images,
+      content,
+      preparation_steps,
     })
 
     return reply.status(201).send(recipe)
@@ -136,23 +127,21 @@ export async function updateRecipe(
   const { uuid } = createGetCategoryBodySchema.parse(request.params)
 
   try {
-    const recipe = await prisma.recipe.update({
-      where: {
-        id: uuid,
-      },
-      data: {
-        title,
-        slug: slugify(title),
-        preparation_time,
-        difficulty,
-        people_serv,
-        ingredients,
-        images,
-        content,
-        preparation_steps,
-        category_id,
-        user_id,
-      },
+    const recipeRepository = new PrismaRecipeRepository()
+    const updateRecipeUseCase = new UpdateRecipeUseCase(recipeRepository)
+
+    const recipe = await updateRecipeUseCase.execute({
+      uuid,
+      title,
+      preparation_time,
+      difficulty,
+      people_serv,
+      ingredients,
+      images,
+      content,
+      preparation_steps,
+      category_id,
+      user_id,
     })
 
     return reply.status(200).send(recipe)
@@ -172,21 +161,15 @@ export async function deleteRecipe(
   const { uuid } = createGetCategoryBodySchema.parse(request.params)
 
   try {
-    const recipe = await prisma.recipe.findUnique({
-      where: {
-        id: uuid,
-      },
-    })
+    const recipeRepository = new PrismaRecipeRepository()
 
-    if (!recipe) {
+    const recipeExists = recipeRepository.findUnique(uuid)
+
+    if (!recipeExists) {
       return reply.status(404).send({ message: 'Recipe not found' })
     }
 
-    await prisma.recipe.delete({
-      where: {
-        id: uuid,
-      },
-    })
+    recipeRepository.delete(uuid)
 
     return reply.status(200).send()
   } catch (error) {
