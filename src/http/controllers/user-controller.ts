@@ -1,19 +1,16 @@
 import { prisma } from '@/lib/prisma'
-import { hash } from 'bcryptjs'
+import { PrismaUserRepository } from '@/repositories/prisma/prisma-user-repository'
+import { CreateUserUseCase } from '@/use-cases/create-user'
+import { UpdateUserUseCase } from '@/use-cases/update-user'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
 export async function listUsers(_: FastifyRequest, reply: FastifyReply) {
+  const userRepository = new PrismaUserRepository()
+  
   try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        full_name: true,
-        email: true,
-        updated_at: true,
-        created_at: true,
-      },
-    })
+    const users = await userRepository.findMany()
+
     return reply.status(201).send(users)
   } catch (error) {
     throw new Error()
@@ -27,12 +24,10 @@ export async function getUser(request: FastifyRequest, reply: FastifyReply) {
 
   const { uuid } = createGetUserSchema.parse(request.params)
 
+  const userRepository = new PrismaUserRepository()
+
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: uuid,
-      },
-    })
+    const user = await userRepository.findUnique(uuid)
 
     if (!user) {
       return reply.status(404).send({ message: 'User not found' })
@@ -55,27 +50,14 @@ export async function createUser(request: FastifyRequest, reply: FastifyReply) {
     request.body,
   )
 
-  const userWithSameEmail = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  })
-
-  if (userWithSameEmail) {
-    return reply.status(400).send({
-      error: 'E-mail already exists!',
-    })
-  }
-
-  const password_hash = await hash(password, 8)
+  const userRepository = new PrismaUserRepository()
+  const createUserUseCase = new CreateUserUseCase(userRepository)
 
   try {
-    await prisma.user.create({
-      data: {
-        full_name,
-        email,
-        password_hash,
-      },
+    await createUserUseCase.execute({
+      full_name,
+      email,
+      password,
     })
 
     return reply.status(201).send()
@@ -99,30 +81,20 @@ export async function updateUser(request: FastifyRequest, reply: FastifyReply) {
 
   const { uuid } = createUuidBodySchema.parse(request.params)
 
-  const userExists = await prisma.user.findUnique({
-    where: {
-      id: uuid,
-    },
-  })
+  const userRepository = new PrismaUserRepository()
+  const updateUserUseCase = new UpdateUserUseCase(userRepository)
 
-  if (!userExists) {
-    return reply.status(404).send()
-  }
-
-  const password_hash = await hash(password, 8)
-
-  await prisma.user.update({
-    where: {
-      id: uuid,
-    },
-    data: {
+  try {
+    await updateUserUseCase.execute({
+      uuid,
       full_name,
       email,
-      password_hash,
-    },
-  })
+      password,
+    })
 
-  return reply.status(200).send()
+    return reply.status(200).send()
+  
+  } catch (error) {}
 }
 
 export async function deleteUser(request: FastifyRequest, reply: FastifyReply) {
@@ -132,20 +104,20 @@ export async function deleteUser(request: FastifyRequest, reply: FastifyReply) {
 
   const { uuid } = createDeleteUserSchema.parse(request.params)
 
-  const userExists = await prisma.user.findUnique({
-    where: {
-      id: uuid,
-    },
-  })
+  const userRepository = new PrismaUserRepository()
+
+  const userExists = await userRepository.findUnique(uuid)
 
   if (!userExists) {
     return reply.status(404).send()
   }
 
-  await prisma.user.delete({
-    where: {
-      id: uuid,
-    },
-  })
-  return reply.status(200).send()
+  try {
+    await prisma.user.delete({
+      where: {
+        id: uuid,
+      },
+    })
+    return reply.status(200).send()
+  } catch (error) {}
 }

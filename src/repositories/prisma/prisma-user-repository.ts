@@ -29,7 +29,15 @@ export class PrismaUserRepository implements UserInterface {
   }
 
   findMany(): Promise<User[]> {
-    const user = prisma.user.findMany()
+    const user = prisma.user.findMany({
+      select: {
+        id: true,
+        full_name: true,
+        email: true,
+        updated_at: true,
+        created_at: true,
+      },
+    })
 
     return user
   }
