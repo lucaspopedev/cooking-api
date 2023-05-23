@@ -13,7 +13,7 @@ interface UpdateTipData {
 }
 
 export class PrismaTipRepository implements TipInterface {
-  create(data: Prisma.TipCreateInput): Promise<Tip> {
+  create(data: Prisma.TipUncheckedCreateInput): Promise<Tip> {
     const tip = prisma.tip.create({
       data,
     })
